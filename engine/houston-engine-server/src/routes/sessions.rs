@@ -21,8 +21,10 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
+use houston_composio::toolkit_display_name;
 use houston_engine_core::sessions::{
-    self, history, resolve_agent_dir, resolve_provider, summarize, SessionRuntime, StartParams,
+    self, generate_instructions, history, resolve_agent_dir, resolve_provider, summarize,
+    SessionRuntime, StartParams,
 };
 use houston_engine_core::CoreError;
 use houston_terminal_manager::Provider;
@@ -48,6 +50,10 @@ pub fn router() -> Router<Arc<ServerState>> {
             get(load_history),
         )
         .route("/sessions/summarize", post(summarize_activity))
+        .route(
+            "/sessions/generate-instructions",
+            post(generate_agent_instructions),
+        )
 }
 
 #[derive(Debug, Deserialize)]
@@ -198,6 +204,69 @@ async fn summarize_activity(
     ))
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GenerateInstructionsRequest {
+    pub description: String,
+    #[serde(default)]
+    pub provider: Option<String>,
+    #[serde(default)]
+    pub model: Option<String>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SuggestedIntegration {
+    slug: String,
+    display_name: String,
+}
+
+fn resolve_suggested_integration(raw: String) -> SuggestedIntegration {
+    let slug = raw.to_lowercase();
+    let display_name = toolkit_display_name(&slug).to_string();
+    SuggestedIntegration { slug, display_name }
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct GenerateInstructionsResponse {
+    name: String,
+    instructions: String,
+    suggested_integrations: Vec<SuggestedIntegration>,
+    // Passthrough: core already built + validated the cron, no resolution needed.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    suggested_routine: Option<generate_instructions::SuggestedRoutine>,
+}
+
+async fn generate_agent_instructions(
+    Json(req): Json<GenerateInstructionsRequest>,
+) -> Result<Json<GenerateInstructionsResponse>, ApiError> {
+    let (provider, model) = if let Some(p_str) = req.provider.as_deref() {
+        let provider = p_str
+            .parse()
+            .map_err(|e: String| CoreError::BadRequest(e))?;
+        (provider, req.model)
+    } else {
+        // `Provider::default()` is anthropic — same fallback the
+        // `summarize_activity` handler above uses for the no-override case.
+        (Provider::default(), req.model)
+    };
+    let result =
+        generate_instructions::generate_instructions(&req.description, provider, model.as_deref())
+            .await?;
+    let suggested_integrations = result
+        .suggested_integrations
+        .into_iter()
+        .map(resolve_suggested_integration)
+        .collect();
+    Ok(Json(GenerateInstructionsResponse {
+        name: result.name,
+        instructions: result.instructions,
+        suggested_integrations,
+        suggested_routine: result.suggested_routine,
+    }))
+}
+
 async fn cancel_session(
     State(st): State<Arc<ServerState>>,
     Path((agent_path, key_action)): Path<(String, String)>,
@@ -254,4 +323,30 @@ fn resolve_provider_with_overrides(
         provider: resolved.provider,
         model: resolved.model,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn resolve_normalizes_uppercase_slug() {
+        let result = resolve_suggested_integration("GMAIL".to_string());
+        assert_eq!(result.slug, "gmail");
+        assert_eq!(result.display_name, "Gmail");
+    }
+
+    #[test]
+    fn resolve_normalizes_mixed_case_slug() {
+        let result = resolve_suggested_integration("GoogleCalendar".to_string());
+        assert_eq!(result.slug, "googlecalendar");
+        assert_eq!(result.display_name, "Google Calendar");
+    }
+
+    #[test]
+    fn resolve_unknown_slug_uses_slug_as_display_name() {
+        let result = resolve_suggested_integration("UNKNOWNTOOL".to_string());
+        assert_eq!(result.slug, "unknowntool");
+        assert_eq!(result.display_name, "unknowntool");
+    }
 }

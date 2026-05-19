@@ -3,6 +3,7 @@ import { Input } from "@houston-ai/core";
 import { Gift, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { AgentDefinition, StoreListing } from "../../lib/types";
+import { SkillCard } from "../skill-card";
 import { AgentCard, StoreAgentCard } from "./experience-card";
 import { useUIStore } from "../../stores/ui";
 
@@ -13,6 +14,7 @@ interface StoreStepProps {
   storeCatalog: StoreListing[];
   onSelect: (id: string) => void;
   onInstall: (listing: StoreListing) => Promise<void>;
+  onCreateWithAi: () => void;
 }
 
 export function StoreStep({
@@ -22,6 +24,7 @@ export function StoreStep({
   storeCatalog,
   onSelect,
   onInstall,
+  onCreateWithAi,
 }: StoreStepProps) {
   const { t } = useTranslation(["shell", "portable"]);
   const setImportOpen = useUIStore((s) => s.setImportFromFriendOpen);
@@ -54,6 +57,21 @@ export function StoreStep({
       }),
     [query, storeCatalog],
   );
+
+  const reorderedAgents = useMemo(() => {
+    if (!query) {
+      const result = [...filteredAgents];
+      const paIndex = result.findIndex((a) => a.config.id === "personal-assistant");
+      // Pin personal-assistant to array index 1 (grid slot 1) so it sits right
+      // after the SkillCard tile, which renders outside this map at grid slot 0.
+      if (paIndex >= 0 && paIndex !== 1) {
+        const [pa] = result.splice(paIndex, 1);
+        result.splice(1, 0, pa);
+      }
+      return result;
+    }
+    return filteredAgents;
+  }, [filteredAgents, query]);
 
   const totalResults = filteredAgents.length + filteredStore.length;
 
@@ -95,7 +113,16 @@ export function StoreStep({
         </button>
         {totalResults > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {filteredAgents.map((def) => (
+            {!query && (
+              <SkillCard
+                image="rocket"
+                title={t("aiAssist.cardTitle")}
+                description={t("aiAssist.cardDescription")}
+                className="min-h-[132px]"
+                onClick={onCreateWithAi}
+              />
+            )}
+            {reorderedAgents.map((def) => (
               <AgentCard
                 key={def.config.id}
                 config={def.config}

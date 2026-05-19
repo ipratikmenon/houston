@@ -174,6 +174,92 @@
   "newAgent": {
     "dialogTitle": "New agent"
   },
+  "aiAssist": {
+    "cardTitle": "Create with AI",
+    "cardDescription": "Answer a few quick questions and we'll write your agent's instructions",
+    "stepTitle": "Set up your agent",
+    "generateButton": "Generate instructions",
+    "generatingMessage": "Writing your agent's instructions...",
+    "cancelButton": "Cancel",
+    "generatedTitle": "Here are your agent's instructions",
+    "generatedHelper": "Review and edit the instructions below, then continue when ready",
+    "nameLabel": "Agent name",
+    "namePlaceholder": "e.g. Email Inbox Manager",
+    "errorTitle": "Generation failed",
+    "errorDescription": "Could not generate instructions. Make sure your AI provider is connected and try again.",
+    "form": {
+      "focusLabel": "What should this agent help with?",
+      "focusRequired": "Pick a focus area to continue",
+      "traitsLabel": "Pick up to 3 traits",
+      "traitsHint": "{{selected}}/{{max}} selected",
+      "verbosityLabel": "How detailed should responses be?",
+      "verbosityMin": "Brief",
+      "verbosityMax": "Exhaustive",
+      "askFirstLabel": "Should it ask questions before answering?",
+      "askFirstHint": "The agent will clarify your request before diving in",
+      "extraLabel": "Additional instructions",
+      "extraOptional": "optional",
+      "extraPlaceholder": "Any other preferences, rules, or context for this agent..."
+    },
+    "focus": {
+      "personalProductivity": "Personal productivity",
+      "workBusiness": "Work and business",
+      "researchLearning": "Research and learning",
+      "writingEditing": "Writing and editing",
+      "codingDev": "Coding and development",
+      "customerSupport": "Customer support",
+      "dataAnalysis": "Data and analysis",
+      "creativeDesign": "Creative and design"
+    },
+    "traits": {
+      "concise": "Concise",
+      "thorough": "Thorough",
+      "friendly": "Friendly",
+      "professional": "Professional",
+      "creative": "Creative",
+      "analytical": "Analytical",
+      "proactive": "Proactive",
+      "cautious": "Cautious",
+      "structured": "Structured",
+      "casual": "Casual"
+    },
+    "verbosity": {
+      "1": "Very brief",
+      "2": "Brief",
+      "3": "Balanced",
+      "4": "Detailed",
+      "5": "Very detailed"
+    }
+  },
+  "aiReview": {
+    "stepTitle": "Review your agent",
+    "instructionsLabel": "Agent instructions",
+    "instructionsHelper": "Review and edit the instructions below"
+  },
+  "aiIntegrations": {
+    "stepTitle": "Connect your apps",
+    "stepDescription": "These apps work well with your agent. Connect them now or do it later from the Integrations tab.",
+    "notInstalledNote": "You can connect integrations from the Integrations tab after creating your agent.",
+    "needsAuthNote": "Sign in to Composio to connect apps now, or do it after creating your agent.",
+    "signIn": "Sign in",
+    "connected": "Connected",
+    "connect": "Connect",
+    "continueButton": "Continue"
+  },
+  "aiRoutine": {
+    "stepTitle": "Set up automatic runs",
+    "stepDescription": "Based on what you described, this agent can run on a schedule by itself. Edit anything before you turn it on.",
+    "nameLabel": "Routine name",
+    "promptLabel": "What it should do each time",
+    "scheduleLabel": "When it runs",
+    "consentTitle": "Before you turn this on",
+    "consentScheduled": "It runs by itself on a schedule.",
+    "consentUsage": "Every run uses AI, so it counts toward your usage.",
+    "consentNeedsApp": "If it uses an app, that app must be connected or the routine can't run.",
+    "laterNote": "You can create, change, or turn off routines anytime in the agent's Routines tab.",
+    "enableLabel": "Enable this routine",
+    "continueButton": "Continue"
+  },
   "engineGate": {
     "starting": "Starting Houston engine…"
   },

@@ -59,6 +59,7 @@ import type {
   SkillDetail,
   SkillSummary,
   StoreListing,
+  GenerateInstructionsResult,
   SummarizeOptions,
   SummarizeResult,
   TunnelStatus,
@@ -628,6 +629,19 @@ export class HoustonClient {
       provider: opts.provider,
       model: opts.model,
     });
+  }
+
+  generateAgentInstructions(
+    description: string,
+    opts: { provider?: string; model?: string; signal?: AbortSignal } = {},
+  ): Promise<GenerateInstructionsResult> {
+    return this.request(
+      "POST",
+      "/sessions/generate-instructions",
+      { description, provider: opts.provider, model: opts.model },
+      undefined,
+      opts.signal,
+    );
   }
 
   // ---------- routine scheduler ----------

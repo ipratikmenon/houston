@@ -27,6 +27,7 @@ import type {
   ComposioStatus as EngineComposioStatus,
   ProviderAuthState,
   ProviderStatus as EngineProviderStatus,
+  GenerateInstructionsResult,
 } from "@houston-ai/engine-client";
 import { getEngine } from "./engine";
 import { osPickDirectory } from "./os-bridge";
@@ -155,6 +156,16 @@ export const tauriAgents = {
   updateColor: (workspaceId: string, id: string, color: string) =>
     call<Agent>("update_agent_color", async () =>
       toAgent(await getEngine().updateAgent(workspaceId, id, { color })),
+    ),
+  generateInstructions: (
+    description: string,
+    opts: { provider?: string; model?: string; signal?: AbortSignal } = {},
+  ) =>
+    call<GenerateInstructionsResult>(
+      "generate_agent_instructions",
+      () => getEngine().generateAgentInstructions(description, opts),
+      undefined,
+      { toast: false },
     ),
 };
 
